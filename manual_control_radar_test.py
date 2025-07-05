@@ -8,20 +8,20 @@ import os
 import csv
 from datetime import datetime
 
-# Emergency braking thresholds
+#Emergency braking thresholds
 BRAKE_DISTANCE = 10.0
 FOLLOW_DISTANCE = 15.0
 BRAKE_FORCE = 1.0
-SPEED_LIMIT = 45.0  # km/h
+SPEED_LIMIT = 45.0  
 
-# Globals
+#Globals
 obstacle_distance = None
 camera_surface = None
 show_radar = False
 collision_log = []
 data_logging = True
 
-#unique CSV file to log data
+#CSV file to log data
 save_dir = "ego_vehicle_data"
 os.makedirs(save_dir, exist_ok=True)
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -77,8 +77,8 @@ def camera_callback(image):
     array = np.frombuffer(image.raw_data, dtype=np.uint8)
     array = array.reshape((image.height, image.width, 4))[:, :, :3]
     array = array[:, :, ::-1]
-    array = np.rot90(array)
-    camera_surface = pygame.surfarray.make_surface(array)
+    
+    camera_surface = pygame.surfarray.make_surface(array.swapaxes(0, 1))
 
 def spawn_autopilot_vehicles(world, blueprint_library, ego_spawn, count=5, tm_port=8000):
     vehicle_bps = blueprint_library.filter('vehicle.*')
@@ -235,9 +235,9 @@ def main():
                     control.throttle = 0.552
                 if keys[pygame.K_s]:
                     control.brake = 0.5
-                if keys[pygame.K_d]:
-                    control.steer = -0.3
                 if keys[pygame.K_a]:
+                    control.steer = -0.3
+                if keys[pygame.K_d]:
                     control.steer = 0.3
 
                 if obstacle_distance is not None and obstacle_distance < FOLLOW_DISTANCE and not reverse_mode:
@@ -257,7 +257,7 @@ def main():
                 pygame.display.flip()
 
     except KeyboardInterrupt:
-        print("Stopped by user")
+        print("Stopped")
     finally:
         for actor in [radar_sensor, camera_sensor, collision_sensor, ego_vehicle, lead_vehicle] + other_vehicles:
             if actor and actor.is_alive:
@@ -266,4 +266,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-#perfecto
