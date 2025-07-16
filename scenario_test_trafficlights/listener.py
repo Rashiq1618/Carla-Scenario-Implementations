@@ -1,11 +1,11 @@
 import socket
 import json
 
-RECEIVE_IP = "0.0.0.0"
-RECEIVE_PORT = 8000  
+RECEIVE_IP = "0.0.0.0"       #all interfaces
+RECEIVE_PORT = 8000          #from Computer A
 
-SEND_IP = "127.0.0.1" 
-SEND_PORT = 8001       
+SEND_IP = "192.168.178.47"   # ip of computer A
+SEND_PORT = 8001             #to computer A
 
 recv_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 recv_sock.bind((RECEIVE_IP, RECEIVE_PORT))
@@ -31,8 +31,12 @@ while True:
 
         print(f"Speed: {speed:.2f} km/h | Traffic Light: {traffic_light} | Distance: {distance:.2f} m")
 
+        
         brake = decide_brake(traffic_light)
-        control_msg = {"brake": brake}
+        control_msg = {
+            "brake": brake,
+            "log": f"Brake: {brake}"
+        }
         send_sock.sendto(json.dumps(control_msg).encode('utf-8'), (SEND_IP, SEND_PORT))
 
     except socket.timeout:
