@@ -8,7 +8,6 @@ import threading
 import pygame
 import numpy as np
 
-
 SEND_IP = "192.168.178.47"  # IP of Computer B
 SEND_PORT = 8000            # Send to B
 
@@ -40,7 +39,7 @@ def udp_receiver():
         except Exception:
             continue
 
-#UDP receiving thread
+# UDP receiving thread
 threading.Thread(target=udp_receiver, daemon=True).start()
 
 def get_speed(vehicle):
@@ -54,11 +53,6 @@ def get_traffic_light_ahead(vehicle, distance_threshold=100.0):
         if 10.0 <= distance <= distance_threshold:
             return traffic_light, distance
     return None, None
-
-def radar_callback(data, radar_data_list):
-    radar_data_list.clear()
-    for detection in data:
-        radar_data_list.append(detection)
 
 def process_camera_image(image, display_surface):
     array = np.frombuffer(image.raw_data, dtype=np.uint8)
@@ -82,15 +76,6 @@ def main():
     ego_vehicle = world.spawn_actor(vehicle_bp, random.choice(spawn_points))
     ego_vehicle.set_autopilot(True)
 
-    # Radar sensor setup
-    radar_bp = blueprint_library.find('sensor.other.radar')
-    radar_bp.set_attribute('horizontal_fov', '30')
-    radar_bp.set_attribute('vertical_fov', '5')
-    radar_bp.set_attribute('range', '100')
-    radar = world.spawn_actor(radar_bp, carla.Transform(carla.Location(x=2.0, z=1.0)), attach_to=ego_vehicle)
-    radar_data_list = []
-    radar.listen(lambda data: radar_callback(data, radar_data_list))
-
     # Camera setup
     camera_bp = blueprint_library.find('sensor.camera.rgb')
     camera_bp.set_attribute('image_size_x', '800')
@@ -110,7 +95,6 @@ def main():
                 if event.type == pygame.QUIT:
                     running = False
 
-            
             speed = get_speed(ego_vehicle)
             traffic_light, distance = get_traffic_light_ahead(ego_vehicle)
             tl_state_str = "None"
@@ -123,7 +107,6 @@ def main():
                 elif state == carla.TrafficLightState.Green:
                     tl_state_str = "Green"
 
-           
             msg = {
                 "speed": speed,
                 "traffic_light_state": tl_state_str,
@@ -131,12 +114,9 @@ def main():
             }
             send_sock.sendto(json.dumps(msg).encode('utf-8'), (SEND_IP, SEND_PORT))
 
-
             time.sleep(0.1)
 
     finally:
-        radar.stop()
-        radar.destroy()
         camera.stop()
         camera.destroy()
         ego_vehicle.destroy()
