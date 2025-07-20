@@ -8,20 +8,18 @@ import os
 import csv
 from datetime import datetime
 
-#Emergency braking thresholds
+# Emergency braking thresholds
 BRAKE_DISTANCE = 10.0
 FOLLOW_DISTANCE = 15.0
 BRAKE_FORCE = 1.0
-SPEED_LIMIT = 45.0  
+SPEED_LIMIT = 40.0
 
-#Globals
+# Globals
 obstacle_distance = None
 camera_surface = None
-show_radar = False
-collision_log = []
 data_logging = True
 
-#CSV file to log data
+# CSV file to log data
 save_dir = "ego_vehicle_data"
 os.makedirs(save_dir, exist_ok=True)
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -29,15 +27,15 @@ csv_filename = os.path.join(save_dir, f"ego_data_{timestamp}.csv")
 
 with open(csv_filename, mode='w', newline='') as file:
     writer = csv.writer(file)
-    writer.writerow(["Speed (km/h)", "", "Brake", "", "Emergency Brake Applied", "", "Obstacle Distance (m)"])
+    writer.writerow(["Speed (km/h)", "Brake", "Emergency Brake Applied", "Obstacle Distance (m)"])
 
 def log_ego_data(speed, brake, emergency_brake, obstacle):
     with open(csv_filename, mode='a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([
-            f"{speed:.1f}", "", 
-            f"{brake:.2f}", "", 
-            "Yes" if emergency_brake else "No", "", 
+            f"{speed:.1f}",
+            f"{brake:.2f}",
+            "Yes" if emergency_brake else "No",
             f"{obstacle:.1f}" if obstacle is not None else "N/A"
         ])
 
@@ -77,7 +75,7 @@ def camera_callback(image):
     array = np.frombuffer(image.raw_data, dtype=np.uint8)
     array = array.reshape((image.height, image.width, 4))[:, :, :3]
     array = array[:, :, ::-1]
-    
+
     camera_surface = pygame.surfarray.make_surface(array.swapaxes(0, 1))
 
 def spawn_autopilot_vehicles(world, blueprint_library, ego_spawn, count=5, tm_port=8000):
@@ -101,7 +99,7 @@ def get_speed(vehicle):
     vel = vehicle.get_velocity()
     return 3.6 * math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
 
-def draw_info_panel(surface, ego_vehicle, control, reverse_mode, recording):
+def draw_info_panel(surface, ego_vehicle, control, reverse_mode):
     panel_width = 200
     panel_rect = pygame.Rect(800, 0, panel_width, 600)
     pygame.draw.rect(surface, (30, 30, 30), panel_rect)
@@ -129,18 +127,15 @@ def draw_info_panel(surface, ego_vehicle, control, reverse_mode, recording):
     if obstacle_distance is not None:
         draw_line("Obstacle", f"{obstacle_distance:.1f} m")
 
-    if recording:
-        rec_font = pygame.font.SysFont("Arial", 22, bold=True)
-        rec_text = rec_font.render("● Recording", True, (255, 0, 0))
-        surface.blit(rec_text, (810, 570))
+    rec_font = pygame.font.SysFont("Arial", 22, bold=True)
+    rec_text = rec_font.render("● Recording", True, (255, 0, 0))
+    surface.blit(rec_text, (810, 570))
 
 def collision_callback(event):
     actor_type = event.other_actor.type_id
-    collision_log.append(f"Collision with {actor_type} at frame {event.frame}")
     print(f"Collision with {actor_type} at frame {event.frame}")
 
 def main():
-    global show_radar
     pygame.init()
     display = pygame.display.set_mode((1000, 600))
     pygame.display.set_caption("Ego Vehicle Dashboard")
@@ -212,8 +207,6 @@ def main():
                     if event.key == pygame.K_q:
                         reverse_mode = not reverse_mode
                         print("Reverse mode:", reverse_mode)
-                    elif event.key == pygame.K_r:
-                        show_radar = not show_radar
 
             keys = pygame.key.get_pressed()
             control = carla.VehicleControl()
@@ -253,7 +246,7 @@ def main():
 
             if camera_surface:
                 display.blit(camera_surface, (0, 0))
-                draw_info_panel(display, ego_vehicle, control, reverse_mode, data_logging)
+                draw_info_panel(display, ego_vehicle, control, reverse_mode)
                 pygame.display.flip()
 
     except KeyboardInterrupt:
