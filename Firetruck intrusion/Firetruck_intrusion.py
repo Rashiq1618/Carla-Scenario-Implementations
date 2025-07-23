@@ -7,7 +7,7 @@ import numpy as np
 import math
 import sys
 import cv2
-sys.path.append(r'C:\Users\Naved PC\Carla\PythonAPI\carla') 
+sys.path.append(r'C:\Users\Carla\PythonAPI\carla') #add your carla directory 
 from agents.navigation.global_route_planner import GlobalRoutePlanner
 
 # connect to the sim 
