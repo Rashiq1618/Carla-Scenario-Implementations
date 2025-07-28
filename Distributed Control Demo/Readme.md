@@ -1,0 +1,3 @@
+This project sets up a distributed CARLA simulation using two computers connected via UDP. 
+The ego_vehicle_node.py runs the CARLA simulator with an ego vehicle in autopilot mode and a third-person RGB camera mounted behind and slightly above the car. The car doesn't follow any traffic rules before the remote_braking_node.py interacts with the ego_vehicle_node.py. It also uses OpenCV to display the camera feed in real time and sends telemetry data (vehicle speed and traffic light state) via UDP to remote_braking_node.py. In turn, remote_braking_node.py can remotely control the ego vehicle by sending UDP commands like "brake" or "resume".
+The system enables real-time monitoring and basic remote control of a simulated autonomous vehicle
