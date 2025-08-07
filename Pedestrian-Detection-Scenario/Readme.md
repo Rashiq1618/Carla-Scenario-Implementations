@@ -2,7 +2,7 @@ This project demonstrates a distributed pedestrian detection and vehicle control
 
 Key features:
 
-Real-time pedestrian detection using direction vectors and dot product logic
+Pedestrian detection using direction vectors and dot product logic
 
 Autonomous braking and resume logic based on proximity and angle
 
